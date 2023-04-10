@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>Stars Effect</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    #myCanvas {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+    .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      font-family: sans-serif;
+      font-size: 2em;
+      /* تحديد خط النص ثلاثي الأبعاد */
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      animation: none;
+    }
+  </style>
+</head>
+
+<body onload="textEffect()">
+  <canvas id="myCanvas"></canvas>
+  <div class="overlay">Fars Ahmed, Front End Web Developer</div>
+  <script>
+    // Create objects we'll need
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({
+      canvas: document.querySelector("#myCanvas")
+    });
+    // Adjust viewing properties
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.position.z = 30;
+
+    // Add fog to create depth
+    scene.fog = new THREE.Fog(0x000000, 1, 1000);
+
+    // Add stars
+    let stars = [];
+    const starGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(5000 * 3);
+    const colors = new Float32Array(5000 * 3);
+
+    for (let i = 0; i < positions.length; i++) {
+      positions[i] = Math.random() * 800 - 400;
+      colors[i] = Math.random();
+    }
+
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const starMaterial = new THREE.PointsMaterial({
+      vertexColors: true,
+      size: 0.9,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
+    });
+    const starMesh = new THREE.Points(starGeometry, starMaterial);
+    scene.add(starMesh);
+
+    // Add comets
+    let comets = [];
+    for (let i = 0; i < 20; i++) {
+      let cometGeometry = new THREE.BufferGeometry();
+      let cometMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1,
+        opacity: 0.5,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+      });
+      let vertices = [];
+      for (let j = 0; j < 300; j++) {
+        vertices.push(Math.random() * 600 - 300, Math.random() * 600 - 300, -(Math.random() * 200) - 100);
+      }
+      cometGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      let comet = new THREE.Points(cometGeometry, cometMaterial);
+      comets.push(comet);
+      scene.add(comet);
+    }
+
+    // Move stars and comets
+    function moveObjects() {
+      starGeometry.attributes.position.needsUpdate = true;
+      for (let i = 0; i < positions.length; i += 3) {
+        positions[i + 2] -= (0.5 + Math.random() * 0.5);
+        if (positions[i + 2] < -400) {
+          positions[i + 2] += 800;
+        }
+      }
+      comets.forEach(comet => {
+        let vertices = comet.geometry.attributes.position.array;
+        for (let i = 2; i < vertices.length; i += 3) {
+          vertices[i] += 1;
+          if (vertices[i] > 0) {
+            vertices[i - 2] = Math.random() * 600 - 300;
+            vertices[i - 1] = Math.random() * 600 - 300;
+            vertices[i] = -(Math.random() * 200) - 100;
+            
+          }
+    }
+    comet.geometry.attributes.position.needsUpdate = true;
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  moveObjects();
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Text effect
+function textEffect() {
+  const textEls = document.querySelectorAll(".overlay");
+  let index = 0;
+  let text = "Fars Ahmed, Front End Web Developer"; // Replace with your desired text
+  const interval = setInterval(() => {
+    textEls[0].innerHTML = text.slice(0, index);
+    index++;
+    if (index > text.length) {
+      clearInterval(interval);
+      setInterval(() => {
+        index = 0;
+      }, 3000);
+    }
+  }, 100);
+
+}
+
+setInterval(textEffect, 5000);
+
+</script>
+</body>
+
+</html>
